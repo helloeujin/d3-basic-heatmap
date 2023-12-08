@@ -106,3 +106,38 @@ d3.csv("data/temperature-anomaly-data.csv")
   .catch((error) => {
     console.error("Error loading CSV data: ", error);
   });
+
+////////////////////////////////////////////////////////////////////
+////////////////////////////  Resize  //////////////////////////////
+window.addEventListener("resize", () => {
+  //  width, height updated
+  width = parseInt(d3.select("#svg-container").style("width"));
+  height = parseInt(d3.select("#svg-container").style("height"));
+
+  //  scale updated
+  xScale.range([margin.left, width - margin.right]);
+  xLegendScale.range([width / 2 - 140, width / 2 + 140]);
+
+  // heatmap
+  rects
+    .attr("x", (d) => xScale(d.year))
+    .attr("y", margin.top)
+    .attr("width", xScale.bandwidth())
+    .attr("height", height - margin.top - margin.bottom);
+
+  // legend
+  legendRects
+    .attr("x", (d, i) => xLegendScale(i))
+    .attr("y", height - margin.bottom + 25)
+    .attr("width", xLegendScale.bandwidth())
+    .attr("height", 20);
+
+  legendLabels
+    .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
+    .attr("y", height - margin.bottom + 25 + 15);
+
+  //  unit
+  unit
+    .attr("x", xLegendScale(legendData.length - 1) + 60)
+    .attr("y", height - margin.bottom + 25 + 15);
+});
