@@ -8,7 +8,7 @@ const svg = d3.select("#svg-container").append("svg").attr("id", "svg");
 
 let width = parseInt(d3.select("#svg-container").style("width"));
 let height = parseInt(d3.select("#svg-container").style("height"));
-const margin = { top: 20, right: 10, bottom: 77, left: 10 };
+const margin = { top: 20, right: 10, bottom: 100, left: 10 };
 
 // scale
 const xScale = d3
@@ -31,6 +31,7 @@ const xLegendScale = d3
 
 // svg elements
 let rects, legendRects, legendLabels, unit;
+let xAxis;
 
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////  Load CSV  ////////////////////////////
@@ -60,6 +61,10 @@ d3.csv("data/temperature-anomaly-data.csv")
     xScale.domain(data.map((d) => d.year));
     xLegendScale.domain(legendData.map((d, i) => i));
 
+    xAxis = d3
+      .axisBottom(xScale)
+      .tickValues(xScale.domain().filter((d, i) => !(i % 10)));
+
     // heatmap
     rects = svg
       .selectAll("rects")
@@ -79,7 +84,7 @@ d3.csv("data/temperature-anomaly-data.csv")
       .enter()
       .append("rect")
       .attr("x", (d, i) => xLegendScale(i))
-      .attr("y", height - margin.bottom + 25)
+      .attr("y", height - margin.bottom + 50)
       .attr("width", xLegendScale.bandwidth())
       .attr("height", 20)
       .attr("fill", (d) => colorScale(d));
@@ -90,7 +95,7 @@ d3.csv("data/temperature-anomaly-data.csv")
       .enter()
       .append("text")
       .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
-      .attr("y", height - margin.bottom + 25 + 15)
+      .attr("y", height - margin.bottom + 50 + 15)
       .text((d) => d3.format(".1f")(d))
       .style("fill", (d) => (Math.abs(d) >= 0.5 ? "#fff" : "#111"))
       .attr("class", "legend-labels");
@@ -100,8 +105,14 @@ d3.csv("data/temperature-anomaly-data.csv")
       .append("text")
       .text("(°C)")
       .attr("x", xLegendScale(legendData.length - 1) + 60)
-      .attr("y", height - margin.bottom + 25 + 15)
+      .attr("y", height - margin.bottom + 50 + 15)
       .attr("class", "legend-labels");
+
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .attr("class", "x-axis")
+      .call(xAxis);
   })
   .catch((error) => {
     console.error("Error loading CSV data: ", error);
@@ -128,16 +139,21 @@ window.addEventListener("resize", () => {
   // legend
   legendRects
     .attr("x", (d, i) => xLegendScale(i))
-    .attr("y", height - margin.bottom + 25)
+    .attr("y", height - margin.bottom + 50)
     .attr("width", xLegendScale.bandwidth())
     .attr("height", 20);
 
   legendLabels
     .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
-    .attr("y", height - margin.bottom + 25 + 15);
+    .attr("y", height - margin.bottom + 50 + 15);
 
   //  unit
   unit
     .attr("x", xLegendScale(legendData.length - 1) + 60)
-    .attr("y", height - margin.bottom + 25 + 15);
+    .attr("y", height - margin.bottom + 50 + 15);
+
+  //  axis updated
+  d3.select(".x-axis")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(xAxis);
 });
